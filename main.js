@@ -1,12 +1,29 @@
 function HTMLAllLoad() {
     try {
-        let app = new PIXI.Application({width: 800, height: 800});
+        let app = new PIXI.Application({
+            width: 600,
+            height: 600,
+            backgroundColor: 0x1099bb,
+            antialias: true,
+            autoDensity: true,
+            resolution: 1
+
+        });
         document.body.appendChild(app.view);
 
-        let f = new Field(6, 6);
-        console.log(f.field[0][0])
+        const greenCircle = new PIXI.Graphics();
+        greenCircle.lineStyle(2, 0xFEEB77, 1);
+        greenCircle.beginFill(0x00FF00, 1);
+        greenCircle.drawCircle(0, 0, 60);
+        greenCircle.endFill();
 
-        console.log(f.field)
+        app.ticker.add((delta) => {
+            const mouseCoords = app.renderer.plugins.interaction.mouse.global;
+
+            greenCircle.x = mouseCoords.x;
+            greenCircle.y = mouseCoords.y;
+        });
+        app.stage.addChild(greenCircle);
 
     } catch (error) {
         alert(error.name + '\n\n' + error.message + '\n\n' + error.stack);
