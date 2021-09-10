@@ -1,40 +1,62 @@
 function HTMLAllLoad() {
     try {
-        let app = new PIXI.Application({
-            width: 600,
-            height: 600,
-            backgroundColor: 0x1099bb,
-            antialias: true,
-            autoDensity: true,
-            resolution: 1
+        let game = new Game();
 
-        });
-        document.body.appendChild(app.view);
+        let field = new Field(game.fieldSize, game.fieldSize);
 
-        const greenCircle = new PIXI.Graphics();
-        greenCircle.lineStyle(2, 0xFEEB77, 1);
-        greenCircle.beginFill(0x00FF00, 1);
-        greenCircle.drawCircle(0, 0, 60);
-        greenCircle.endFill();
+        for (let rov of field.field) {
+            for (let col of rov) {
+                game.addChild(col.displayObject)
+            }
+        }
 
-        app.ticker.add((delta) => {
-            const mouseCoords = app.renderer.plugins.interaction.mouse.global;
-
-            greenCircle.x = mouseCoords.x;
-            greenCircle.y = mouseCoords.y;
-        });
-        app.stage.addChild(greenCircle);
+        game.run()
 
     } catch (error) {
         alert(error.name + '\n\n' + error.message + '\n\n' + error.stack);
     }
 }
 
+class Game {
+    constructor() {
+        this.dotSize = 65;
+        this.fieldSize = 6;
+        this.backgroundColor = 0x6abdce;
+        //this.backgroundColor = '#6abdce';
+
+        this.application = new PIXI.Application({
+            width: this.dotSize * this.fieldSize * 2,
+            height: this.dotSize * this.fieldSize * 2,
+            backgroundColor: this.backgroundColor,
+            antialias: true,
+            autoDensity: true,
+            resolution: 1
+        });
+        document.body.appendChild(this.application.view);
+    }
+
+    run() {
+        this.application.ticker.add(this.ticker, this);
+    }
+
+    addChild(displayObject) {
+        this.application.stage.addChild(displayObject);
+    }
+
+    ticker(delta) {
+        const mouseCoords = this.application.renderer.plugins.interaction.mouse.global;
+
+        //greenCircle.x = mouseCoords.x;
+        //greenCircle.y = mouseCoords.y;
+    }
+}
+
 class Dot {
-    constructor(x, y, color) {
+    constructor(x, y, color, displayObject) {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.displayObject = displayObject;
     }
 }
 
@@ -42,15 +64,20 @@ class Field {
     constructor(width, height) {
         this.width = width;
         this.height = height;
-        this.field = Array.from(Array(this.width), () => new Array(this.height));
+
         this.colors = [
-            'yellow',
-            'blue',
-            'green',
-            'red',
-            'purple'
+            0xFFFF00, //yellow
+            0x1E90FF, //dodgerblue
+            0xADFF2F, //greenyellow
+            0xCD5C5C, //indianred
+            0x9370DB  //mediumpurple
         ];
+
+        this.field = Array.from(Array(this.width), () => new Array(this.height));
+
+
         this.fillRandom()
+
     }
 
     fillRandom() {
@@ -58,8 +85,22 @@ class Field {
             for (let y = 0; y < this.height; y++) {
                 let i = Math.floor(Math.random() * this.colors.length);
                 let color = this.colors[i];
-                this.field[x][y] = new Dot(x, y, color)
+                this.field[x][y] = this.createRandomDot(x, y, color)
+
             }
         }
+    }
+
+    createRandomDot(x, y, color) {
+        let displayObject = new PIXI.Graphics();
+        displayObject.lineStyle(2, 0xFFFFFF, 1);
+        displayObject.beginFill(color, 1);
+        displayObject.drawCircle(65, 65, 60);
+        displayObject.endFill();
+
+        displayObject.x = x * 65 * 2;
+        displayObject.y = y * 65 * 2;
+
+        return new Dot(x, y, color, displayObject)
     }
 }
