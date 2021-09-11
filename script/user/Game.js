@@ -16,45 +16,51 @@ class Game {
         }
         this.application.stage.interactive = true;
         this.application.stage.hitArea = this.application.renderer.screen;
-        this.application.stage.addEventListener('mousedown', this.onMousedown);
-        this.application.stage.addEventListener('mouseup', this.onMouseup);
-        this.application.stage.addEventListener('mousemove', this.onMousemove);
+
+        this.application.stage.addEventListener('mousedown', Events.onMousedown);
+        this.application.stage.addEventListener('mouseup', Events.onMouseup);
+        this.application.stage.addEventListener('mousemove', Events.onMousemove);
+        this.application.stage.addEventListener('mouseover', Events.onMouseover);
+
         this.field = new Field();
         this.addList(this.field.list);
+
+        this.dotsQueue = [];
+        this.linesQueue = [];
     }
 
-    onMouseup(e) {
-        this.removeChild(Mouse.Line)
-        Mouse.LMB = false;
-        Mouse.Line = false;
+    inDotsQueue(dot) {
+        return this.dotsQueue.includes(dot);
     }
 
-    onMousemove(e) {
-        if (Mouse.LMB === true) {
-            //console.log(`stage onMousemove: ${e.x} ${e.y}`)
-            //console.log(`stage onMousemove target: ${e.target.x} ${e.target.y}`)
-            //console.log(e.target.name)
-            if (Mouse.Line !== false) {
-                Mouse.Line.updatePoints([null, null, e.x, e.y])
-            }
+    inLinesQueue(line) {
+        return this.linesQueue.includes(line);
+    }
+
+    addDot(dot) {
+        if (!this.dotsQueue.includes(dot)) {
+            this.dotsQueue.push(dot)
         }
     }
 
-    onMousedown(e) {
-        if (e.target.name === "Dot") {
-            //console.log(`stage onMousedown: ${e.x} ${e.y}`)
-            //console.log(`stage onMousedown target: ${e.target.x} ${e.target.y}`)
-            //console.log(e.target.name)
-            Mouse.LMB = true;
-            if (Mouse.Line === false) {
-                let size = Config.dotSize + Config.margin
-                let x = e.target.x + size;
-                let y = e.target.y + size;
-                let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
-                Config.game.addChildBack(line);
-                Mouse.Line = line;
-            }
+    addLine(line) {
+        if (!this.linesQueue.includes(line)) {
+            this.linesQueue.push(line)
         }
+    }
+
+    clearLines() {
+        for (let l of this.linesQueue) {
+            this.removeChild(l);
+        }
+        this.linesQueue = [];
+    }
+
+    clearDots() {
+        for (let d of this.dotsQueue) {
+            //this.removeChild(d);
+        }
+        this.dotsQueue = [];
     }
 
     run() {
