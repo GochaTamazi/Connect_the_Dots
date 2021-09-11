@@ -33,6 +33,29 @@ class Game {
         return this.dotsQueue.includes(dot);
     }
 
+    isPrevDot(dot) {
+        if (this.dotsQueue.length >= 2) {
+            return this.dotsQueue[this.dotsQueue.length - 2] === dot;
+        }
+        return false;
+    }
+
+    popDot() {
+        return this.dotsQueue.pop();
+    }
+
+    popLine() {
+        return this.linesQueue.pop();
+    }
+
+    getLastLine() {
+        return this.linesQueue.at(-1)
+    }
+
+    getLastDot() {
+        return this.dotsQueue.at(-1)
+    }
+
     inLinesQueue(line) {
         return this.linesQueue.includes(line);
     }

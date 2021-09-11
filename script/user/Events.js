@@ -54,6 +54,12 @@ class Events {
                         Mouse.Line = line;
                         Config.game.addLine(Mouse.Line)
                         Config.game.addDot(e.target)
+                    } else if (Config.game.isPrevDot(e.target)) {
+                        let dot = Config.game.popDot();
+                        let line = Config.game.popLine();
+                        Config.game.removeChild(line);
+                        Mouse.Line = Config.game.getLastLine();
+                        console.log("Yes")
                     }
                 }
             }
