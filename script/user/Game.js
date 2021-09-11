@@ -52,14 +52,6 @@ class Game {
         return this.linesQueue.at(-1)
     }
 
-    getLastDot() {
-        return this.dotsQueue.at(-1)
-    }
-
-    inLinesQueue(line) {
-        return this.linesQueue.includes(line);
-    }
-
     addDot(dot) {
         if (!this.dotsQueue.includes(dot)) {
             this.dotsQueue.push(dot)
@@ -87,7 +79,7 @@ class Game {
     }
 
     run() {
-        //this.application.ticker.add(this.ticker, this);
+        this.application.ticker.add(Events.ticker, this);
     }
 
     addChild(displayObject) {
@@ -106,11 +98,5 @@ class Game {
         for (let v of list) {
             this.addChild(v.displayObject)
         }
-    }
-
-    ticker(delta) {
-        const mouseCoords = this.application.renderer.plugins.interaction.mouse.global;
-        //greenCircle.x = mouseCoords.x;
-        //greenCircle.y = mouseCoords.y;
     }
 }

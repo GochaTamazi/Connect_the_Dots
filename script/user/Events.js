@@ -6,9 +6,11 @@ class Events {
             //console.log(e.target.name)
             Mouse.LMB = true;
             if (Mouse.Line === false) {
-                let size = Config.dotSize + Config.margin
+                let size = Config.dotSize + Config.margin;
+
                 let x = e.target.x + size;
                 let y = e.target.y + size;
+
                 let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
                 Config.game.addChildBack(line);
                 Mouse.Line = line;
@@ -48,21 +50,29 @@ class Events {
                         let size = Config.dotSize + Config.margin
                         let x = e.target.x + size;
                         let y = e.target.y + size;
-                        let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
-                        Mouse.Line.updatePoints([null, null, x, y])
-                        Config.game.addChildBack(line);
-                        Mouse.Line = line;
-                        Config.game.addLine(Mouse.Line)
-                        Config.game.addDot(e.target)
+                        let length = Mouse.Line.getDistanceToNextPoint(x, y);
+                        if (length <= Config.maxDist) {
+                            let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
+                            Mouse.Line.updatePoints([null, null, x, y])
+                            Config.game.addChildBack(line);
+                            Mouse.Line = line;
+                            Config.game.addLine(Mouse.Line)
+                            Config.game.addDot(e.target)
+                        }
                     } else if (Config.game.isPrevDot(e.target)) {
                         let dot = Config.game.popDot();
                         let line = Config.game.popLine();
                         Config.game.removeChild(line);
                         Mouse.Line = Config.game.getLastLine();
-                        console.log("Yes")
                     }
                 }
             }
         }
+    }
+
+    static ticker(delta) {
+        //const mouseCoords = this.application.renderer.plugins.interaction.mouse.global;
+        //greenCircle.x = mouseCoords.x;
+        //greenCircle.y = mouseCoords.y;
     }
 }
