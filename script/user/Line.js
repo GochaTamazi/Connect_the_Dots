@@ -1,7 +1,13 @@
 class Line extends PIXI.Graphics {
+    static lastId = 0;
+
     constructor(points, lineWidth = 10, lineColor = "0x000000") {
         super();
 
+        this.id = Line.lastId;
+        Line.lastId++;
+
+        this.name = "Line";
         this.points = points;
         let x1 = points[0];
         let y1 = points[1];

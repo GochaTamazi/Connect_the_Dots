@@ -3,6 +3,8 @@ class Game {
         this.maxDist = Config.dotSize * 2 + Config.margin * 2;    // Maximum length of dots connection
         this.dotsQueue = [];
         this.linesQueue = [];
+        this.score = 0;
+        this.LMB = false;
 
         let fieldLength = (Config.dotSize + Config.margin) * Config.fieldSize * 2;   // Field size in pixels
         delete PIXI.Renderer.__plugins.interaction;
@@ -24,7 +26,9 @@ class Game {
         this.application.stage.hitArea = this.application.renderer.screen;
 
         this.field = new Field();
-        this.addList(this.field.getList());
+        for (let v of this.field.getList()) {
+            this.application.stage.addChild(v.displayObject);
+        }
 
         let game = this;
         this.application.stage.addEventListener('mousedown', (e) => {
@@ -43,142 +47,103 @@ class Game {
         this.application.ticker.add(this.ticker, this);
     }
 
-    inDotsQueue(dot) {
-        return this.dotsQueue.includes(dot);
-    }
-
-    isPrevDot(dot) {
-        if (this.dotsQueue.length >= 2) {
-            return this.dotsQueue[this.dotsQueue.length - 2] === dot;
-        }
-        return false;
-    }
-
-    popDot() {
-        return this.dotsQueue.pop();
-    }
-
-    popLine() {
-        return this.linesQueue.pop();
-    }
-
-    getLastLine() {
-        return this.linesQueue.at(-1);
-    }
-
-    addDot(dot) {
-        if (!this.dotsQueue.includes(dot)) {
-            this.dotsQueue.push(dot);
-        }
-    }
-
-    addLine(line) {
-        if (!this.linesQueue.includes(line)) {
-            this.linesQueue.push(line);
-        }
-    }
-
-    clearLines() {
-        for (let l of this.linesQueue) {
-            this.removeChild(l);
-        }
-        this.linesQueue = [];
-    }
-
-    clearDots() {
-        for (let d of this.dotsQueue) {
-            //this.removeChild(d);
-        }
-        this.dotsQueue = [];
-    }
-
-    addChild(displayObject) {
-        this.application.stage.addChild(displayObject);
-    }
-
-    addChildBack(displayObject) {
-        this.application.stage.addChildAt(displayObject, 0);
-    }
-
-    removeChild(child) {
-        this.application.stage.removeChild(child);
-    }
-
-    addList(list) {
-        for (let v of list) {
-            this.addChild(v.displayObject);
-        }
-    }
-
-    /*
-        Events begin
-    */
     onMousedown(e) {
-        if (e.target.name === "Dot") {
-            //e.x e.y | e.target.x e.target.y
-            Mouse.LMB = true;
-            if (Mouse.Line === false) {
-                let size = Config.dotSize + Config.margin;
-                let x = e.target.x + size;
-                let y = e.target.y + size;
-                let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
-                this.addChildBack(line);
-                Mouse.Line = line;
-                if (!this.inDotsQueue(e.target)) {
-                    this.addLine(Mouse.Line);
-                    this.addDot(e.target);
-                }
+        if (e.target.name !== "Dot") {
+            return;
+        }
+
+        this.LMB = true;
+        let size = Config.dotSize + Config.margin;
+        let x = e.target.x + size;
+        let y = e.target.y + size;
+        let line = new Line([x, y, e.global.x, e.global.y], Config.lineSize, e.target.Color);
+        this.application.stage.addChildAt(line, 0);
+        this.linesQueue.push(line);
+        this.dotsQueue.push(e.target);
+    }
+
+    onMousemove(e) {
+        if (this.LMB !== true) {
+            return;
+        }
+        if (this.linesQueue.length <= 0) {
+            return;
+        }
+
+        let line = this.linesQueue[this.linesQueue.length - 1];
+        line.updatePoints([null, null, e.global.x, e.global.y]);
+    }
+
+    onMouseover(e) {
+        if (e.target.name !== "Dot") {
+            return;
+        }
+        if (this.LMB !== true) {
+            return;
+        }
+        if (this.linesQueue.length <= 0) {
+            return;
+        }
+
+        let line = this.linesQueue[this.linesQueue.length - 1];
+
+        if (e.target.Color !== line.lineColor) {
+            return;
+        }
+
+        let size = Config.dotSize + Config.margin;
+        let x = e.target.x + size;
+        let y = e.target.y + size;
+
+        let length = line.getDistanceToPoint(x, y);
+        if (length > this.maxDist) {
+            return;
+        }
+
+        if (!this.dotsQueue.includes(e.target)) {
+            line.updatePoints([null, null, x, y]);
+            line = new Line([x, y, e.global.x, e.global.y], Config.lineSize, e.target.Color);
+            this.application.stage.addChildAt(line, 0);
+            this.linesQueue.push(line);
+            this.dotsQueue.push(e.target);
+        } else {
+            if (this.dotsQueue.length < 2) {
+                return;
             }
+
+            let dot = this.dotsQueue[this.dotsQueue.length - 2];
+            if (dot.id !== e.target.id) {
+                return;
+            }
+
+            this.application.stage.removeChild(line);
+            this.linesQueue.pop();
+            this.dotsQueue.pop();
+            if (this.linesQueue.length <= 0) {
+                return;
+            }
+
+            line = this.linesQueue[this.linesQueue.length - 1];
+            line.updatePoints([null, null, e.global.x, e.global.y]);
         }
     }
 
     onMouseup(e) {
-        this.removeChild(Mouse.Line);
-        Mouse.LMB = false;
-        Mouse.Line = false;
-        this.clearLines();
-        this.clearDots();
-    }
+        this.LMB = false;
 
-    onMousemove(e) {
-        if (Mouse.LMB === true) {
-            if (Mouse.Line !== false) {
-                Mouse.Line.updatePoints([null, null, e.x, e.y]);
-            }
+        for (let l of this.linesQueue) {
+            this.application.stage.removeChild(l);
         }
-    }
+        this.linesQueue = [];
 
-    onMouseover(e) {
-        if (Mouse.LMB === true) {
-            if (e.target.name === "Dot") {
-                console.log(e.target.id);
-                let field = this.field;
-                let elem = field.getElement(e.target.id);
-                console.log(elem)
-
-                if (e.target.Color === Mouse.Line.lineColor) {
-                    if (!this.inDotsQueue(e.target)) {
-                        let size = Config.dotSize + Config.margin;
-                        let x = e.target.x + size;
-                        let y = e.target.y + size;
-                        let length = Mouse.Line.getDistanceToPoint(x, y);
-                        if (length <= this.maxDist) {
-                            let line = new Line([x, y, e.x, e.y], Config.lineSize, e.target.Color);
-                            Mouse.Line.updatePoints([null, null, x, y]);
-                            this.addChildBack(line);
-                            Mouse.Line = line;
-                            this.addLine(Mouse.Line);
-                            this.addDot(e.target);
-                        }
-                    } else if (this.isPrevDot(e.target)) {
-                        let dot = this.popDot();
-                        let line = this.popLine();
-                        this.removeChild(line);
-                        Mouse.Line = this.getLastLine();
-                    }
-                }
+        if (this.dotsQueue.length >= 2) {
+            for (let d of this.dotsQueue) {
+                this.score++;
+                this.application.stage.removeChild(d);
             }
+            document.getElementById('score').innerHTML = this.score;
         }
+        this.dotsQueue = [];
     }
 
     ticker(delta) {
@@ -186,8 +151,4 @@ class Game {
         //greenCircle.x = mouseCoords.x;
         //greenCircle.y = mouseCoords.y;
     }
-
-    /*
-        Events end
-    */
 }

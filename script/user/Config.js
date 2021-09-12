@@ -17,8 +17,3 @@ class Config {
         return Config.dotColors[i];
     }
 }
-
-class Mouse {
-    static LMB = false;
-    static Line = false;
-}
