@@ -112,16 +112,18 @@ class Game {
 
     onMouseup(e) {
         this.LMB = false;
-        for (let l of this.linesQueue) {
-            this.application.stage.removeChild(l);
+        for (let line of this.linesQueue) {
+            this.application.stage.removeChild(line);
         }
         this.linesQueue = [];
+
         if (this.dotsQueue.length >= 2) {
-            for (let d of this.dotsQueue) {
+            for (let dot of this.dotsQueue) {
                 this.score++;
-                //d.alpha = 0.5;
-                this.application.stage.removeChild(d);
+                dot.deleted = true;
+                this.application.stage.removeChild(dot);
             }
+
             document.getElementById('score').innerHTML = this.score;
             this.field.rebaseField();
         }
@@ -129,9 +131,6 @@ class Game {
     }
 
     ticker(delta) {
-        //const mouseCoords = this.application.renderer.plugins.interaction.mouse.global;
-        //greenCircle.x = mouseCoords.x;
-        //greenCircle.y = mouseCoords.y;
         for (const [key, a] of this.field.animatedObj) {
             if (a.animation) {
                 if (!a.animation.done) {

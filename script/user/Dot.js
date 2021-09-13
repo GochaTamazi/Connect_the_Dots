@@ -28,4 +28,8 @@ class Dot extends PIXI.Graphics {
 
         this.animation = false;
     }
+
+    createAnimation(y) {
+        this.animation = new MovementAnimation(this, y, 8);
+    }
 }
