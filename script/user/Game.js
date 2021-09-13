@@ -1,11 +1,11 @@
 class Game {
     constructor() {
-        this.animationPlay = false;
+        this.animationPlay = false;     // If the animation is currently playing
         this.maxDist = Config.dotSize * 2 + Config.margin * 2;    // Maximum length of dots connection
-        this.dotsQueue = [];
-        this.linesQueue = [];
-        this.score = 0;
-        this.LMB = false;
+        this.dotsQueue = [];    // list of connected Dots
+        this.linesQueue = [];   // list of connections of these Dots
+        this.score = 0;     // The game score
+        this.LMB = false;   // if the left mouse button down
         let fieldLength = (Config.dotSize + Config.margin) * Config.fieldSize * 2;   // Field size in pixels
 
         delete PIXI.Renderer.__plugins.interaction;
@@ -32,8 +32,8 @@ class Game {
         this.fieldBg.drawRect(0, 0, fieldLength, fieldLength);
         this.fieldBg.x = (this.application.screen.width - fieldLength) / 2;
         this.fieldBg.y = (this.application.screen.height - fieldLength) / 2;
-
         this.fieldBg.endFill();
+
         this.fieldBg.interactive = true;
         this.fieldBg.hitArea = this.application.renderer.screen;
         this.fieldBg.name = "fieldBg";
@@ -107,6 +107,7 @@ class Game {
         if (this.linesQueue.length <= 0) {
             return;
         }
+
         let line = this.linesQueue[this.linesQueue.length - 1];
 
         if (e.target.Color !== line.lineColor) {
@@ -122,12 +123,15 @@ class Game {
         }
 
         if (!this.dotsQueue.includes(e.target)) {
+
             line.updatePoints([null, null, x, y]);
             line = new Line([x, y, e.global.x, e.global.y], Config.lineSize, e.target.Color);
             this.fieldBg.addChildAt(line, 0);
             this.linesQueue.push(line);
             this.dotsQueue.push(e.target);
+
         } else {
+
             if (this.dotsQueue.length < 2) {
                 return;
             }
@@ -143,6 +147,7 @@ class Game {
             }
             line = this.linesQueue[this.linesQueue.length - 1];
             line.updatePoints([null, null, e.global.x, e.global.y]);
+
         }
     }
 
@@ -150,7 +155,9 @@ class Game {
         if (this.animationPlay) {
             return;
         }
+
         this.LMB = false;
+
         for (let line of this.linesQueue) {
             this.fieldBg.removeChild(line);
         }
