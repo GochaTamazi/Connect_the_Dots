@@ -13,7 +13,7 @@ class Field {
             for (let y = 0; y < Config.fieldSize; y++) {
                 let dot = new Dot(x, y, Config.getRandColors());
                 this.field[x][y] = dot;
-                this.game.application.stage.addChild(dot);
+                this.game.fieldBg.addChild(dot);
             }
         }
     }
@@ -64,7 +64,7 @@ class Field {
             for (let col of row) {
                 let dot = new Dot(col.iX, y - row.length, Config.getRandColors());
                 this.field[col.iX][col.iY] = dot;
-                this.game.application.stage.addChild(dot);
+                this.game.fieldBg.addChild(dot);
                 dot.createAnimation(col.y);
                 this.animatedObj.set(dot.id, dot);
                 y++;

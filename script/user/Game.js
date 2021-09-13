@@ -1,28 +1,53 @@
 class Game {
     constructor() {
+        this.animationPlay = false;
         this.maxDist = Config.dotSize * 2 + Config.margin * 2;    // Maximum length of dots connection
         this.dotsQueue = [];
         this.linesQueue = [];
         this.score = 0;
         this.LMB = false;
         let fieldLength = (Config.dotSize + Config.margin) * Config.fieldSize * 2;   // Field size in pixels
+
         delete PIXI.Renderer.__plugins.interaction;
+
         this.application = new PIXI.Application({
-            width: fieldLength,
-            height: fieldLength,
-            backgroundColor: Config.backgroundColor,
+            width: fieldLength + 100,
+            height: fieldLength + 100,
+            backgroundColor: 0x999999,
             antialias: true,
             autoDensity: true,
             resolution: 2
         });
         document.body.appendChild(this.application.view);
+
         if (!('events' in this.application.renderer)) {
             this.application.renderer.addSystem(PIXI.EventSystem, 'events');
         }
+
         this.application.stage.interactive = true;
         this.application.stage.hitArea = this.application.renderer.screen;
+
+        this.fieldBg = new PIXI.Graphics();
+        this.fieldBg.beginFill(Config.backgroundColor);
+        this.fieldBg.drawRect(0, 0, fieldLength, fieldLength);
+        this.fieldBg.x = (this.application.screen.width - fieldLength) / 2;
+        this.fieldBg.y = (this.application.screen.height - fieldLength) / 2;
+
+        this.fieldBg.endFill();
+        this.fieldBg.interactive = true;
+        this.fieldBg.hitArea = this.application.renderer.screen;
+        this.fieldBg.name = "fieldBg";
+
+        this.application.stage.addChild(this.fieldBg);
+
+        let basicText = new PIXI.Text('POINTS: 00000');
+        basicText.x = fieldLength - 150;
+        this.application.stage.addChild(basicText);
+        this.scoreBasicText = basicText;
+
         this.field = new Field(this);
         let game = this;
+
         this.application.stage.addEventListener('mousedown', (e) => {
             game.onMousedown(e);
         });
@@ -39,6 +64,9 @@ class Game {
     }
 
     onMousedown(e) {
+        if (this.animationPlay) {
+            return;
+        }
         if (e.target.name !== "Dot") {
             return;
         }
@@ -46,13 +74,16 @@ class Game {
         let size = Config.dotSize + Config.margin;
         let x = e.target.x + size;
         let y = e.target.y + size;
-        let line = new Line([x, y, e.global.x, e.global.y], Config.lineSize, e.target.Color);
-        this.application.stage.addChildAt(line, 0);
+        let line = new Line([x, y, e.global.x - this.fieldBg.x, e.global.y - this.fieldBg.y], Config.lineSize, e.target.Color);
+        this.fieldBg.addChildAt(line, 0);
         this.linesQueue.push(line);
         this.dotsQueue.push(e.target);
     }
 
     onMousemove(e) {
+        if (this.animationPlay) {
+            return;
+        }
         if (this.LMB !== true) {
             return;
         }
@@ -60,10 +91,13 @@ class Game {
             return;
         }
         let line = this.linesQueue[this.linesQueue.length - 1];
-        line.updatePoints([null, null, e.global.x, e.global.y]);
+        line.updatePoints([null, null, e.global.x - this.fieldBg.x, e.global.y - this.fieldBg.y]);
     }
 
     onMouseover(e) {
+        if (this.animationPlay) {
+            return;
+        }
         if (e.target.name !== "Dot") {
             return;
         }
@@ -78,6 +112,7 @@ class Game {
         if (e.target.Color !== line.lineColor) {
             return;
         }
+
         let size = Config.dotSize + Config.margin;
         let x = e.target.x + size;
         let y = e.target.y + size;
@@ -85,10 +120,11 @@ class Game {
         if (length > this.maxDist) {
             return;
         }
+
         if (!this.dotsQueue.includes(e.target)) {
             line.updatePoints([null, null, x, y]);
             line = new Line([x, y, e.global.x, e.global.y], Config.lineSize, e.target.Color);
-            this.application.stage.addChildAt(line, 0);
+            this.fieldBg.addChildAt(line, 0);
             this.linesQueue.push(line);
             this.dotsQueue.push(e.target);
         } else {
@@ -99,7 +135,7 @@ class Game {
             if (dot.id !== e.target.id) {
                 return;
             }
-            this.application.stage.removeChild(line);
+            this.fieldBg.removeChild(line);
             this.linesQueue.pop();
             this.dotsQueue.pop();
             if (this.linesQueue.length <= 0) {
@@ -111,9 +147,12 @@ class Game {
     }
 
     onMouseup(e) {
+        if (this.animationPlay) {
+            return;
+        }
         this.LMB = false;
         for (let line of this.linesQueue) {
-            this.application.stage.removeChild(line);
+            this.fieldBg.removeChild(line);
         }
         this.linesQueue = [];
 
@@ -121,16 +160,20 @@ class Game {
             for (let dot of this.dotsQueue) {
                 this.score++;
                 dot.deleted = true;
-                this.application.stage.removeChild(dot);
+                this.fieldBg.removeChild(dot);
             }
 
-            document.getElementById('score').innerHTML = this.score;
+            let str = new Array(6 - this.score.toString().length).join('0') + this.score;
+            this.scoreBasicText.text = `POINTS: ${str}`
+
             this.field.rebaseField();
         }
         this.dotsQueue = [];
     }
 
     ticker(delta) {
+        this.animationPlay = this.field.animatedObj.size > 0;
+
         for (const [key, a] of this.field.animatedObj) {
             if (a.animation) {
                 if (!a.animation.done) {
