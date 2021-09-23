@@ -1,14 +1,14 @@
 # Connect_the_Dots
 
+
 Test task, clone of the game Dots
+
 
 [Connect_the_Dots](https://knjbmflagdkwzl.github.io/Connect_the_Dots/)  
 
 
 
-![screen](screenshots/Скриншот%20сделанный%202016-07-14%20в%2017.03.53.png)
-
-
+![screen](/2021-09-23%2006-12-38.png)
 
 
 
