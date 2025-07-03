@@ -3,8 +3,8 @@
 
 Test task, clone of the game Dots
 
-
-[Connect_the_Dots](https://knjbmflagdkwzl.github.io/Connect_the_Dots/)  
+Demo: 
+[Connect_the_Dots](https://GochaTamazi.github.io/Connect_the_Dots/)  
 
 
 
